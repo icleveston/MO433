@@ -1,6 +1,4 @@
-!pip install apyori
-
-from apyori import apriori
+from efficient_apriori import apriori
 import matplotlib.pyplot as plt
 
 transactions = []
@@ -16,29 +14,21 @@ for line in open('retail.dat', 'r'):
 
 
 # Initialize the apriori generator
-results_generator = apriori(transactions, min_support=0.005, min_confidence=0.9)
+itemsets, rules = apriori(transactions, min_support=0.005, min_confidence=0.9)
 
-# Convert the generator into a list
-results = list(results_generator)
-
-# Show the rules with support, confidence and lift
-print(' Rule \t\t\t Support,  Confidence,  Lift')
-for i in results:    
-    items_base = list(i.ordered_statistics[0].items_base)
-    items_add = list(i.ordered_statistics[0].items_add)
-    
-    print(', '.join(items_base) + ' => ' + ','.join(items_add) + '\t\t' + str( round(i[1], 3)) + ', ' + str( round(i[2][0][2], 3) )   + ', ' + str(round(i[2][0][3], 3) ) )
-
-
+# Print rules
+for rule in reversed(sorted(rules, key=lambda rule: rule.lift)):
+  print(rule)
+  
 # Plot the confidence, support and lift
 supports = []
 confidences = []
 lifts = []
-for item in results:
+for item in rules:
 
-    supports.append(item[1])
-    confidences.append(item[2][0][2])
-    lifts.append(item[2][0][3])
+    supports.append(item.support)
+    confidences.append(item.confidence)
+    lifts.append(item.lift)
 
 # Plots
 plt.title("Confidence vs Support")
@@ -58,4 +48,3 @@ plt.scatter(confidences, lifts,   alpha=0.5, marker="*")
 plt.xlabel('confidences')
 plt.ylabel('lift') 
 plt.show()
-
